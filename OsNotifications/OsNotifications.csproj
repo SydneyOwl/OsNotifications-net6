@@ -4,7 +4,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<Version>1.1.4</Version>
+		<Version>1.1.5</Version>
 		<Authors>DemonExposer</Authors>
 		<Description>Native OS notifications in .NET</Description>
 		<RepositoryUrl>https://github.com/DemonExposer/OsNotifications</RepositoryUrl>
@@ -68,7 +68,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Tmds.DBus" Version="0.91.1" />
+	  <PackageReference Include="Tmds.DBus" Version="0.93.0" />
 	</ItemGroup>
 
 	<Target Name="CleanLib" AfterTargets="Clean">
