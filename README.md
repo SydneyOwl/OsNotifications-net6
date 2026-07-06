@@ -1,5 +1,7 @@
 # Native OS notifications
 
+Modified from https://github.com/DemonExposer/OsNotifications. Downgraded deps to net6 and use a more "native" way to send notifications on windows.
+
 ## Usage
 Calling `Notifications.ShowNotification` will display a notification using your OS's notification manager.
 
