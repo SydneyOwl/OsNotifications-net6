@@ -1,16 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFrameworks>net6.0;net6.0-windows10.0.17763.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
+		<BuildInParallel>false</BuildInParallel>
 		<Version>1.1.5</Version>
 		<PackageId>OsNotificationsNet6</PackageId>
 		<Authors>DemonExposer</Authors>
 		<Description>Native OS notifications in .NET</Description>
-		<RepositoryUrl>https://github.com/DemonExposer/OsNotifications</RepositoryUrl>
+		<RepositoryUrl>https://github.com/SydneyOwl/OsNotifications-net6</RepositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageProjectUrl>https://github.com/DemonExposer/OsNotifications</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/SydneyOwl/OsNotifications-net6</PackageProjectUrl>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>notifications;os-notifications;console;GUI;macos;linux;windows;user-notifications;toast-notifications;popup-notifications;native-notifications</PackageTags>
@@ -18,22 +20,27 @@
 		<Copyright>Copyright (c) 2026 DemonExposer</Copyright>
 	</PropertyGroup>
 
-	<Target Name="CompileMacDependencies" BeforeTargets="Build">
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<Compile Remove="Platforms\Windows\WindowsApplicationRegistration.cs" />
+		<Compile Remove="Platforms\Windows\WindowsNotifications.cs" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' != 'net6.0'">
+		<Compile Remove="Platforms\Windows\WindowsNotifications.Unsupported.cs" />
+	</ItemGroup>
+
+	<Target Name="CompileMacDependencies" BeforeTargets="Build" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
 		<Exec Command="clang -dynamiclib -o $(OutputPath)macNotification_x86_64.dylib macNotification.m -framework Foundation -arch x86_64" />
 		<Exec Command="clang -dynamiclib -o $(OutputPath)macNotification_arm64.dylib macNotification.m -framework Foundation -arch arm64" />
 		<Exec Command="lipo -create -output $(OutputPath)macNotification.dylib $(OutputPath)macNotification_x86_64.dylib $(OutputPath)macNotification_arm64.dylib" />
 		<Exec Command="rm $(OutputPath)macNotification_x86_64.dylib $(OutputPath)macNotification_arm64.dylib" />
 	</Target>
 
-	<Target Name="CompileWindowsDependencies" BeforeTargets="Build">
-		<Exec Command="dotnet publish -c Release -r win-x64 ../WindowsNotification/WindowsNotification.csproj -o $(OutputPath)lib/"/>
-	</Target>
-
 	<ItemGroup>
 		<None Include="..\README.md" Pack="true" PackagePath="" />
 	</ItemGroup>
 	
-	<ItemGroup>
+	<ItemGroup Condition="Exists('$(OutputPath)macNotification.dylib')">
 		<ContentWithTargetPath Include="$(OutputPath)macNotification.dylib">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<TargetPath>macNotification.dylib</TargetPath>
@@ -41,21 +48,12 @@
 		<None Include="$(OutputPath)macNotification.dylib" />
 	</ItemGroup>
 
-	<ItemGroup>
+	<ItemGroup Condition="Exists('$(OutputPath)macNotification.dylib')">
 		<Content Include="$(OutputPath)macNotification.dylib">
 			<Pack>true</Pack>
 			<PackageCopyToOutput>true</PackageCopyToOutput>
 			<PackageFlatten>true</PackageFlatten>
 			<PackagePath>runtimes\osx\native\</PackagePath>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Include="$(OutputPath)lib\*.dll">
-			<Pack>true</Pack>
-			<PackageCopyToOutput>true</PackageCopyToOutput>
-			<PackageFlatten>true</PackageFlatten>
-			<PackagePath>runtimes\win-x64\native\</PackagePath>
 		</Content>
 	</ItemGroup>
 
@@ -70,9 +68,6 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Tmds.DBus" Version="0.93.0" />
+	  <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" Condition="'$(TargetFramework)' != 'net6.0'" />
 	</ItemGroup>
-
-	<Target Name="CleanLib" AfterTargets="Clean">
-		<RemoveDir Directories="$(OutputPath)lib" Condition="Exists('$(OutputPath)lib')"/>
-	</Target>
 </Project>

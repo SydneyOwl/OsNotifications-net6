@@ -1,25 +1,20 @@
-﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using Tmds.DBus;
 
 namespace OsNotifications;
 
-[DBusInterface("org.freedesktop.Notifications")]
-public interface INotifier : IDBusObject {
-	Task<uint> NotifyAsync(
-		string appName,
-		uint replacesId,
-		string appIcon,
-		string summary,
-		string body,
-		string[] actions,
-		IDictionary<string, object> hints,
-		int expireTimeout);
-}
-
 public partial class Notifications {
 	public static string BundleIdentifier = "";
+	public static string? WindowsApplicationId { get; set; }
+	public static string? WindowsApplicationName { get; set; }
+
+	private static bool _isApplicationTypeSpecified;
 	private static Uri? _windowsAudioSource;
+	private static bool _playDefaultWindowsSound = true;
+	private static bool PlayDefaultWindowsSound => _playDefaultWindowsSound;
+
+	static Notifications() {
+		InitializeLinuxNotifications();
+	}
 
 	public static Uri? WindowsAudioSource {
 		get => _windowsAudioSource;
@@ -29,39 +24,16 @@ public partial class Notifications {
 		}
 	}
 
-	private static bool _isApplicationTypeSpecified;
-	private static bool _playDefaultWindowsSound = true;
-	private static readonly INotifier? Notifier;
-
-	static Notifications() {
-		if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-			return;
-		
-		Connection? connection = Connection.Session;
-		connection.ConnectAsync().GetAwaiter().GetResult();
-		Notifier = connection.CreateProxy<INotifier>(
-			"org.freedesktop.Notifications",
-			"/org/freedesktop/Notifications");
-
-		AppDomain.CurrentDomain.ProcessExit += (_, _) => connection.Dispose();
-	}
-
 	public static void ResetWindowsAudioSource() => _playDefaultWindowsSound = true;
-
-	[DllImport("macNotification.dylib")]
-	private static extern void setGuiApplication(sbyte isGuiValue);
 
 	public static void SetGuiApplication(bool isGuiValue) {
 		if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 			return;
-		
-		setGuiApplication(isGuiValue ? (sbyte) 1 : (sbyte) 0);
+
+		SetGuiApplicationMac(isGuiValue);
 		_isApplicationTypeSpecified = true;
 	}
 
-	[DllImport("macNotification.dylib")]
-	private static extern void showNotification([MarshalAs(UnmanagedType.LPStr)] string identifier, [MarshalAs(UnmanagedType.LPStr)] string title, [MarshalAs(UnmanagedType.LPStr)] string subtitle, [MarshalAs(UnmanagedType.LPStr)] string informativeText);
-	
 	public static void ShowNotification(string title, string message = "", string informativeText = "") {
 		if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 			ShowNotificationLinux(title, message);
@@ -71,36 +43,5 @@ public partial class Notifications {
 			ShowNotificationWindows(title, message);
 		else
 			throw new PlatformNotSupportedException("Notifications are only supported on Linux, MacOS and Windows");
-	}
-
-	private static void ShowNotificationLinux(string title, string message) {
-		Notifier!.NotifyAsync(Assembly.GetEntryAssembly()?.GetName().Name ?? "", 0, "", title, message,
-			Array.Empty<string>(), new Dictionary<string, object>(), 5000).GetAwaiter().GetResult();
-	}
-
-	private static void ShowNotificationMac(string title, string message, string informativeText) {
-		if (!_isApplicationTypeSpecified)
-			throw new InvalidOperationException("SetGuiApplication must be called before calling ShowNotification. If SetGuiApplication is called with false in a GUI application, this method WILL HANG!");
-		
-		showNotification(BundleIdentifier, title, message, informativeText);
-	}
-
-	private static void ShowNotificationWindows(string title, string message) {
-		const string winNotifDll = "WindowsNotification.dll";
-		string dllPath = Path.Combine(AppContext.BaseDirectory, winNotifDll);
-
-		string nativePath = Path.Combine(AppContext.BaseDirectory, "runtimes", "win-x64", "native");
-		Environment.SetEnvironmentVariable("PATH", nativePath + ";" + Environment.GetEnvironmentVariable("PATH"));
-
-		if (!File.Exists(dllPath))
-			dllPath = Path.Combine(nativePath, winNotifDll);
-
-		// In case PublishSingleFile is set to true, load the library from the executable itself (this is the case if dllPath does not exist).
-		Assembly assembly = File.Exists(dllPath) ? Assembly.LoadFrom(dllPath) : Assembly.Load(winNotifDll[..^4]);
-		Type? windowsNotificationClass = assembly.GetType("WindowsNotification.WindowsNotification");
-		MethodInfo? showNotificationMethod = windowsNotificationClass?.GetMethod("ShowNotification");
-
-		object? instance = Activator.CreateInstance(windowsNotificationClass!);
-		showNotificationMethod?.Invoke(instance, new object?[] { title, message, !_playDefaultWindowsSound, WindowsAudioSource });
 	}
 }
