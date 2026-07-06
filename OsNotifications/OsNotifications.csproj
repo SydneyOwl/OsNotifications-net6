@@ -5,6 +5,7 @@
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<Version>1.1.5</Version>
+		<PackageId>OsNotificationsNet6</PackageId>
 		<Authors>DemonExposer</Authors>
 		<Description>Native OS notifications in .NET</Description>
 		<RepositoryUrl>https://github.com/DemonExposer/OsNotifications</RepositoryUrl>
@@ -13,7 +14,7 @@
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>notifications;os-notifications;console;GUI;macos;linux;windows;user-notifications;toast-notifications;popup-notifications;native-notifications</PackageTags>
-		<Title>OsNotifications</Title>
+		<Title>OsNotificationsNet6</Title>
 		<Copyright>Copyright (c) 2026 DemonExposer</Copyright>
 	</PropertyGroup>
 

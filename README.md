@@ -23,7 +23,7 @@ This library uses `Microsoft.Toolkit.Uwp.Notifications` to display notifications
 ## Install
 In your .NET project, execute the following command:
 ```
-dotnet add package OsNotifications 
+dotnet add package OsNotificationsNet6
 ```
 
 ## Build from source
