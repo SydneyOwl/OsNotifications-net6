@@ -36,4 +36,9 @@ internal static class LinuxNotifications {
 		_notifier!.NotifyAsync(applicationName, 0, "", title, message,
 			Array.Empty<string>(), new Dictionary<string, object>(), 5000).GetAwaiter().GetResult();
 	}
+
+	public static Task ShowAsync(string title, string message, string applicationName) {
+		return _notifier!.NotifyAsync(applicationName, 0, "", title, message,
+			Array.Empty<string>(), new Dictionary<string, object>(), 5000);
+	}
 }

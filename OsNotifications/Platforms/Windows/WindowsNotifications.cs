@@ -16,6 +16,11 @@ internal static class WindowsNotifications {
 		toastContentBuilder.Show();
 	}
 
+	public static Task ShowAsync(string title, string message, string applicationName, string applicationIdentifier) {
+		Show(title, message, applicationName, applicationIdentifier);
+		return Task.CompletedTask;
+	}
+
 	private static void EnsureApplicationRegistered(string applicationName, string applicationIdentifier) {
 		if (_isWindowsApplicationRegistered)
 			return;

@@ -20,6 +20,14 @@ try {
 }
 ```
 
+Async usage is also available:
+
+```csharp
+await Notifications.ShowNotificationAsync(
+    "Notification title",
+    "Notification message");
+```
+
 ### Windows
 
 For Windows toast notifications, target a Windows TFM:

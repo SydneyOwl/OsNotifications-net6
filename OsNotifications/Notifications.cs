@@ -35,6 +35,17 @@ public partial class Notifications {
 			throw new PlatformNotSupportedException("Notifications are only supported on Linux, MacOS and Windows");
 	}
 
+	public static Task ShowNotificationAsync(string title, string message = "", string informativeText = "") {
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+			return LinuxNotifications.ShowAsync(title, message, GetApplicationName());
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+			return MacNotifications.ShowAsync(title, message, informativeText, ApplicationIdentifier ?? "", _isApplicationTypeSpecified);
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+			return WindowsNotifications.ShowAsync(title, message, GetApplicationName(), GetApplicationIdentifier());
+
+		throw new PlatformNotSupportedException("Notifications are only supported on Linux, MacOS and Windows");
+	}
+
 	private static string GetApplicationName() {
 		if (!string.IsNullOrWhiteSpace(ApplicationName))
 			return ApplicationName.Trim();

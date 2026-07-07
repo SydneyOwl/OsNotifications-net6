@@ -23,4 +23,8 @@ internal static class MacNotifications {
 
 		showNotification(applicationIdentifier, title, message, informativeText);
 	}
+
+	public static Task ShowAsync(string title, string message, string informativeText, string applicationIdentifier, bool isApplicationTypeSpecified) {
+		return Task.Run(() => Show(title, message, informativeText, applicationIdentifier, isApplicationTypeSpecified));
+	}
 }
