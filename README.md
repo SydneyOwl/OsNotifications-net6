@@ -3,24 +3,70 @@
 Modified from https://github.com/DemonExposer/OsNotifications. Downgraded deps to net6 and use a more "native" way to send notifications on windows.
 
 ## Usage
-Calling `Notifications.ShowNotification` will display a notification using your OS's notification manager.
+Call `Notifications.ShowNotification` to display a notification through the current OS notification manager.
 
-On MacOS, if you are working without a bundle and you do not want the notification to show Apple's "Finder", you need to specify the `BundleIdentifier` and this needs to correspond to a defined identifier, otherwise no notification will be shown. It is better to bundle your application to get your own application's icon to show up, but you could spoof another application as well (there is no guarantee that this works with every application though). Also, it must be specified whether the application is a console or GUI application, using `SetGuiApplication`, because if it is a GUI application and it is specified that it is a console application, the application would hang.
-For cross-platform compatibility, it's better to always do this. So, creating a notification will look like this:
-```cs
-Notifications.BundleIdentifier = "com.apple.finder"; // Optional (does nothing for bundled applications)
-Notifications.SetGuiApplication(true); // false for console application
+```csharp
+using OsNotifications;
+
 try {
-    Notifications.ShowNotification("notification-title");
-} catch (PlatformNotSupportedException e) {
-    // Handle exception
+    Notifications.ShowNotification(
+        "Notification title",
+        "Notification message");
+} catch (PlatformNotSupportedException) {
+    // Handle unsupported platforms.
 }
 ```
 
-Of course this works without flaws on Linux and MacOS, but not on Windows... <br/>
-If the application exits right after the `ShowNotification` call, the notification will not be shown on Windows, because of the asynchronous nature of Toast notifications. So, either don't display a notification just before exiting or just put a tiny delay (1000ms should be plenty) after the `ShowNotification` call.
+### Windows
 
-This library uses `Microsoft.Toolkit.Uwp.Notifications` to display notifications on Windows. Windows support is compiled into the `net6.0-windows10.0.17763.0` target and registers the current process with an Application User Model ID before showing the toast. You can optionally set `Notifications.WindowsApplicationName` and `Notifications.WindowsApplicationId` before the first notification to control the Start Menu shortcut name and AUMID.
+For Windows toast notifications, target a Windows TFM:
+
+```xml
+<TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
+```
+
+The library registers an Application User Model ID (AUMID) before showing the first toast. If you do not set one, it uses the current executable name. For production apps, set a stable name and AUMID before the first notification:
+
+```csharp
+using OsNotifications;
+
+Notifications.WindowsApplicationName = "My App";
+Notifications.WindowsApplicationId = "com.example.myapp";
+
+Notifications.ShowNotification("Hello", "This toast is associated with My App.");
+```
+
+The Windows implementation also creates a Start Menu shortcut with the same AUMID so unpackaged desktop apps are correctly recognized by Windows Shell.
+
+If the application exits immediately after `ShowNotification`, Windows may not display the toast because toast delivery is asynchronous. Keep the process alive briefly when sending a notification during shutdown.
+
+### macOS
+
+On macOS, call `SetGuiApplication` before showing notifications:
+
+```csharp
+using OsNotifications;
+
+Notifications.BundleIdentifier = "com.apple.finder"; // Optional for bundled apps.
+Notifications.SetGuiApplication(true);               // false for console apps.
+
+Notifications.ShowNotification(
+    "Notification title",
+    "Subtitle",
+    "Informative text");
+```
+
+If you are not running from an app bundle, `BundleIdentifier` must match an installed bundle identifier. Otherwise macOS may ignore the notification or show it under another application.
+
+### Linux
+
+Linux notifications use the FreeDesktop notification service over DBus:
+
+```csharp
+using OsNotifications;
+
+Notifications.ShowNotification("Build complete", "No errors found.");
+```
 
 ## Install
 In your .NET project, execute the following command:
