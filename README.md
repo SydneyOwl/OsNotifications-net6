@@ -8,6 +8,9 @@ Call `Notifications.ShowNotification` to display a notification through the curr
 ```csharp
 using OsNotifications;
 
+Notifications.ApplicationName = "My App";
+Notifications.ApplicationIdentifier = "com.example.myapp";
+
 try {
     Notifications.ShowNotification(
         "Notification title",
@@ -25,13 +28,13 @@ For Windows toast notifications, target a Windows TFM:
 <TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
 ```
 
-The library registers an Application User Model ID (AUMID) before showing the first toast. If you do not set one, it uses the current executable name. For production apps, set a stable name and AUMID before the first notification:
+The library registers an Application User Model ID (AUMID) before showing the first toast. `ApplicationIdentifier` is used as the AUMID, and `ApplicationName` is used as the Start Menu shortcut name. If you do not set them, the current executable name is used.
 
 ```csharp
 using OsNotifications;
 
-Notifications.WindowsApplicationName = "My App";
-Notifications.WindowsApplicationId = "com.example.myapp";
+Notifications.ApplicationName = "My App";
+Notifications.ApplicationIdentifier = "com.example.myapp";
 
 Notifications.ShowNotification("Hello", "This toast is associated with My App.");
 ```
@@ -47,8 +50,8 @@ On macOS, call `SetGuiApplication` before showing notifications:
 ```csharp
 using OsNotifications;
 
-Notifications.BundleIdentifier = "com.apple.finder"; // Optional for bundled apps.
-Notifications.SetGuiApplication(true);               // false for console apps.
+Notifications.ApplicationIdentifier = "com.apple.finder"; // Optional for bundled apps.
+Notifications.SetGuiApplication(true);                     // false for console apps.
 
 Notifications.ShowNotification(
     "Notification title",
@@ -56,7 +59,7 @@ Notifications.ShowNotification(
     "Informative text");
 ```
 
-If you are not running from an app bundle, `BundleIdentifier` must match an installed bundle identifier. Otherwise macOS may ignore the notification or show it under another application.
+If you are not running from an app bundle, `ApplicationIdentifier` must match an installed bundle identifier. Otherwise macOS may ignore the notification or show it under another application. If it is not set, the native bridge keeps its previous fallback behavior.
 
 ### Linux
 
@@ -67,6 +70,8 @@ using OsNotifications;
 
 Notifications.ShowNotification("Build complete", "No errors found.");
 ```
+
+`ApplicationName` is sent as the FreeDesktop application name. If it is not set, the current executable name is used.
 
 ## Install
 In your .NET project, execute the following command:

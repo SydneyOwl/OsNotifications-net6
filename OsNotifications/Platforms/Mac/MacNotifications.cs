@@ -21,6 +21,6 @@ public partial class Notifications {
 		if (!_isApplicationTypeSpecified)
 			throw new InvalidOperationException("SetGuiApplication must be called before calling ShowNotification. If SetGuiApplication is called with false in a GUI application, this method WILL HANG!");
 
-		showNotification(BundleIdentifier, title, message, informativeText);
+		showNotification(ApplicationIdentifier ?? "", title, message, informativeText);
 	}
 }

@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Runtime.InteropServices;
 using Tmds.DBus;
 
@@ -34,7 +33,7 @@ public partial class Notifications {
 	}
 
 	private static void ShowNotificationLinux(string title, string message) {
-		_notifier!.NotifyAsync(Assembly.GetEntryAssembly()?.GetName().Name ?? "", 0, "", title, message,
+		_notifier!.NotifyAsync(GetApplicationName(), 0, "", title, message,
 			Array.Empty<string>(), new Dictionary<string, object>(), 5000).GetAwaiter().GetResult();
 	}
 }

@@ -12,12 +12,6 @@ public partial class Notifications {
 			.AddText(title)
 			.AddText(message);
 
-		if (!PlayDefaultWindowsSound) {
-			toastContentBuilder.AddAudio(WindowsAudioSource == null
-				? new ToastAudio { Silent = true }
-				: new ToastAudio { Src = WindowsAudioSource });
-		}
-
 		toastContentBuilder.Show();
 	}
 
@@ -25,7 +19,7 @@ public partial class Notifications {
 		if (_isWindowsApplicationRegistered)
 			return;
 
-		WindowsApplicationRegistration.Register(WindowsApplicationName, WindowsApplicationId);
+		WindowsApplicationRegistration.Register(GetApplicationName(), GetApplicationIdentifier());
 		_isWindowsApplicationRegistered = true;
 	}
 }

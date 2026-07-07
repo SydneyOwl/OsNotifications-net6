@@ -1,30 +1,17 @@
 using System.Runtime.InteropServices;
+using System.Reflection;
 
 namespace OsNotifications;
 
 public partial class Notifications {
-	public static string BundleIdentifier = "";
-	public static string? WindowsApplicationId { get; set; }
-	public static string? WindowsApplicationName { get; set; }
+	public static string? ApplicationIdentifier { get; set; }
+	public static string? ApplicationName { get; set; }
 
 	private static bool _isApplicationTypeSpecified;
-	private static Uri? _windowsAudioSource;
-	private static bool _playDefaultWindowsSound = true;
-	private static bool PlayDefaultWindowsSound => _playDefaultWindowsSound;
 
 	static Notifications() {
 		InitializeLinuxNotifications();
 	}
-
-	public static Uri? WindowsAudioSource {
-		get => _windowsAudioSource;
-		set {
-			_windowsAudioSource = value;
-			_playDefaultWindowsSound = false;
-		}
-	}
-
-	public static void ResetWindowsAudioSource() => _playDefaultWindowsSound = true;
 
 	public static void SetGuiApplication(bool isGuiValue) {
 		if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -43,5 +30,19 @@ public partial class Notifications {
 			ShowNotificationWindows(title, message);
 		else
 			throw new PlatformNotSupportedException("Notifications are only supported on Linux, MacOS and Windows");
+	}
+
+	private static string GetApplicationName() {
+		if (!string.IsNullOrWhiteSpace(ApplicationName))
+			return ApplicationName.Trim();
+
+		return Assembly.GetEntryAssembly()?.GetName().Name ?? "";
+	}
+
+	private static string GetApplicationIdentifier() {
+		if (!string.IsNullOrWhiteSpace(ApplicationIdentifier))
+			return ApplicationIdentifier.Trim();
+
+		return GetApplicationName();
 	}
 }
