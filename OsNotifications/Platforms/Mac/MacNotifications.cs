@@ -1,17 +1,19 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace OsNotifications.Platforms.Mac;
 
+[SuppressMessage("Globalization", "CA2101:Specify marshaling for P/Invoke string arguments")]
 internal static class MacNotifications {
 	[DllImport("macNotification.dylib")]
 	private static extern void setGuiApplication(sbyte isGuiValue);
 
 	[DllImport("macNotification.dylib")]
 	private static extern void showNotification(
-		[MarshalAs(UnmanagedType.LPStr)] string identifier,
-		[MarshalAs(UnmanagedType.LPStr)] string title,
-		[MarshalAs(UnmanagedType.LPStr)] string subtitle,
-		[MarshalAs(UnmanagedType.LPStr)] string informativeText);
+		[MarshalAs(UnmanagedType.LPUTF8Str)] string identifier,
+		[MarshalAs(UnmanagedType.LPUTF8Str)] string title,
+		[MarshalAs(UnmanagedType.LPUTF8Str)] string subtitle,
+		[MarshalAs(UnmanagedType.LPUTF8Str)] string informativeText);
 
 	public static void SetGuiApplication(bool isGuiValue) {
 		setGuiApplication(isGuiValue ? (sbyte)1 : (sbyte)0);
