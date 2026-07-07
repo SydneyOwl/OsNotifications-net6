@@ -1,8 +1,8 @@
 using System.Runtime.InteropServices;
 
-namespace OsNotifications;
+namespace OsNotifications.Platforms.Mac;
 
-public partial class Notifications {
+internal static class MacNotifications {
 	[DllImport("macNotification.dylib")]
 	private static extern void setGuiApplication(sbyte isGuiValue);
 
@@ -13,14 +13,14 @@ public partial class Notifications {
 		[MarshalAs(UnmanagedType.LPStr)] string subtitle,
 		[MarshalAs(UnmanagedType.LPStr)] string informativeText);
 
-	private static void SetGuiApplicationMac(bool isGuiValue) {
+	public static void SetGuiApplication(bool isGuiValue) {
 		setGuiApplication(isGuiValue ? (sbyte)1 : (sbyte)0);
 	}
 
-	private static void ShowNotificationMac(string title, string message, string informativeText) {
-		if (!_isApplicationTypeSpecified)
+	public static void Show(string title, string message, string informativeText, string applicationIdentifier, bool isApplicationTypeSpecified) {
+		if (!isApplicationTypeSpecified)
 			throw new InvalidOperationException("SetGuiApplication must be called before calling ShowNotification. If SetGuiApplication is called with false in a GUI application, this method WILL HANG!");
 
-		showNotification(ApplicationIdentifier ?? "", title, message, informativeText);
+		showNotification(applicationIdentifier, title, message, informativeText);
 	}
 }

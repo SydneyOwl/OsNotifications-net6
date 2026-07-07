@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using Tmds.DBus;
 
-namespace OsNotifications;
+namespace OsNotifications.Platforms.Linux;
 
 [DBusInterface("org.freedesktop.Notifications")]
 public interface INotifier : IDBusObject {
@@ -16,10 +16,10 @@ public interface INotifier : IDBusObject {
 		int expireTimeout);
 }
 
-public partial class Notifications {
+internal static class LinuxNotifications {
 	private static INotifier? _notifier;
 
-	private static void InitializeLinuxNotifications() {
+	public static void Initialize() {
 		if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 			return;
 
@@ -32,8 +32,8 @@ public partial class Notifications {
 		AppDomain.CurrentDomain.ProcessExit += (_, _) => connection.Dispose();
 	}
 
-	private static void ShowNotificationLinux(string title, string message) {
-		_notifier!.NotifyAsync(GetApplicationName(), 0, "", title, message,
+	public static void Show(string title, string message, string applicationName) {
+		_notifier!.NotifyAsync(applicationName, 0, "", title, message,
 			Array.Empty<string>(), new Dictionary<string, object>(), 5000).GetAwaiter().GetResult();
 	}
 }

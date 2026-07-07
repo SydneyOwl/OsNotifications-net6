@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
-namespace OsNotifications;
+namespace OsNotifications.Platforms.Windows;
 
 internal static class WindowsApplicationRegistration {
 	private const int MaxPath = 260;

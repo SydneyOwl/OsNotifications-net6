@@ -1,12 +1,13 @@
 using Microsoft.Toolkit.Uwp.Notifications;
 
-namespace OsNotifications;
+namespace OsNotifications.Platforms.Windows;
 
-public partial class Notifications {
+// Modified from https://github.com/pr8x/DesktopNotifications
+internal static class WindowsNotifications {
 	private static bool _isWindowsApplicationRegistered;
 
-	private static void ShowNotificationWindows(string title, string message) {
-		EnsureWindowsApplicationRegistered();
+	public static void Show(string title, string message, string applicationName, string applicationIdentifier) {
+		EnsureApplicationRegistered(applicationName, applicationIdentifier);
 
 		ToastContentBuilder toastContentBuilder = new ToastContentBuilder()
 			.AddText(title)
@@ -15,11 +16,11 @@ public partial class Notifications {
 		toastContentBuilder.Show();
 	}
 
-	private static void EnsureWindowsApplicationRegistered() {
+	private static void EnsureApplicationRegistered(string applicationName, string applicationIdentifier) {
 		if (_isWindowsApplicationRegistered)
 			return;
 
-		WindowsApplicationRegistration.Register(GetApplicationName(), GetApplicationIdentifier());
+		WindowsApplicationRegistration.Register(applicationName, applicationIdentifier);
 		_isWindowsApplicationRegistered = true;
 	}
 }

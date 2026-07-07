@@ -1,5 +1,8 @@
 using System.Runtime.InteropServices;
 using System.Reflection;
+using OsNotifications.Platforms.Linux;
+using OsNotifications.Platforms.Mac;
+using OsNotifications.Platforms.Windows;
 
 namespace OsNotifications;
 
@@ -10,24 +13,24 @@ public partial class Notifications {
 	private static bool _isApplicationTypeSpecified;
 
 	static Notifications() {
-		InitializeLinuxNotifications();
+		LinuxNotifications.Initialize();
 	}
 
 	public static void SetGuiApplication(bool isGuiValue) {
 		if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 			return;
 
-		SetGuiApplicationMac(isGuiValue);
+		MacNotifications.SetGuiApplication(isGuiValue);
 		_isApplicationTypeSpecified = true;
 	}
 
 	public static void ShowNotification(string title, string message = "", string informativeText = "") {
 		if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-			ShowNotificationLinux(title, message);
+			LinuxNotifications.Show(title, message, GetApplicationName());
 		else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-			ShowNotificationMac(title, message, informativeText);
+			MacNotifications.Show(title, message, informativeText, ApplicationIdentifier ?? "", _isApplicationTypeSpecified);
 		else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-			ShowNotificationWindows(title, message);
+			WindowsNotifications.Show(title, message, GetApplicationName(), GetApplicationIdentifier());
 		else
 			throw new PlatformNotSupportedException("Notifications are only supported on Linux, MacOS and Windows");
 	}
