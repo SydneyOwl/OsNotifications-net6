@@ -37,6 +37,15 @@ internal static class MacNotifications {
         [MarshalAs(UnmanagedType.LPUTF8Str)] string body,
         MacNotificationCallback callback, IntPtr userData);
 
+    // --- Delegate setup ---
+
+    [DllImport("macNotification.dylib")]
+    private static extern void initializeNotificationDelegate();
+
+    static MacNotifications() {
+        initializeNotificationDelegate();
+    }
+
     // --- Sync native imports ---
 
     [DllImport("macNotification.dylib")]
