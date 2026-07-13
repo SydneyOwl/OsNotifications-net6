@@ -7,16 +7,16 @@ Modified from https://github.com/DemonExposer/OsNotifications. Downgraded deps t
 ```csharp
 using OsNotifications;
 
-// Set application identity (required for Windows, used as display name on Linux)
+// Set application identity (required for Windows and used as display name on Linux)
 Notifications.SetApplicationName("My App");
 Notifications.SetApplicationIdentifier("com.example.myapp");
 
 // Initialize notification system
 Notifications.Initialize();
 
-// on macOS you can request permission at first startup or whenever you like
-// no-op on other platforms
-Notifications.RequestNotificationPermission();
+// macOS: request permission once at startup; returns true if granted
+// other platforms: no-op
+bool granted = Notifications.RequestNotificationPermission();
 
 try {
     Notifications.ShowNotification(
@@ -30,28 +30,28 @@ try {
 Async usage is also available:
 
 ```csharp
-await Notifications.ShowNotificationAsync(
+bool granted = Notifications.RequestNotificationPermissionAsync();
+bool ok = await Notifications.ShowNotificationAsync(
     "Notification title",
     "Notification message");
 ```
 
-You can also check notification permission at any time:
+Also we can check notification permission at any time:
 
 ```csharp
-if (Notifications.IsNotificationPermissionGranted())
-    Notifications.ShowNotification("Title", "Message");
+NotificationPermissionStatus status = Notifications.GetNotificationPermissionStatus();
+switch (status) {
+    case NotificationPermissionStatus.NotDetermined:
+        Notifications.RequestNotificationPermission();
+        break;
+    case NotificationPermissionStatus.Denied:
+        // Guide user to system settings or, whatever
+        break;
+    case NotificationPermissionStatus.Granted:
+        Notifications.ShowNotification("Title", "Message");
+        break;
+}
 ```
-
-### Abilities
-
-| API | Windows | macOS | Linux                        |
-|-----|---------|-----|------------------------------|
-| `Initialize()` | ✅ | no-op | ✅                            |
-| `SetApplicationIdentifier()` | ✅ | no-op | ✅                            |
-| `SetApplicationName()` | ✅ | no-op | ✅                            |
-| `RequestNotificationPermission()` | no-op | ✅ | no-op                        |
-| `IsNotificationPermissionGranted()` | ✅ | ✅ | just check DBus availability |
-| `ShowNotification()` / `ShowNotificationAsync()` | ✅ | ✅ | ✅     |
 
 ### Windows
 
@@ -79,23 +79,23 @@ If the application exits immediately after `ShowNotification`, Windows may not d
 
 Your app must be running from a proper macOS bundle.
 
-- (optional) call `RequestNotificationPermission` before scheduling any notifications. The system prompts the user only on the very first call, 
-and stores the response permanently. Subsequent calls (even across app restarts) return immediately without prompting.
-- The user may change authorization at any time in system settings. You can safely call this method repeatedly — it will never show the prompt again after the first time.
+- (optional) Always call `RequestNotificationPermission` before scheduling any notifications. Returns `true` if the user granted authorization. 
+The system prompts the user only on the very first call, and stores the response permanently. Subsequent calls (even across app restarts) return immediately without prompting.
+- The user may change authorization at any time in system settings. Use `GetNotificationPermissionStatus()` to check the current status.
 
 ```csharp
 using OsNotifications;
 
-Notifications.RequestNotificationPermission();
+bool granted = Notifications.RequestNotificationPermission();
+if (!granted) {
+    // User denied or an error occurred
+}
 
-// Then show notifications anywhere in your app
 Notifications.ShowNotification(
     "Notification title",
     "Subtitle",
     "Informative text");
 ```
-
-If the user denies authorization, notifications will be silently ignored by the system.
 
 ### Linux
 
@@ -103,6 +103,11 @@ Linux notifications use the FreeDesktop notification service over DBus. Call `In
 
 ```csharp
 using OsNotifications;
+
+Notifications.SetApplicationName("My App");
+
+// optional
+Notifications.SetApplicationIdentifier("com.example.myapp");
 
 Notifications.Initialize();
 
