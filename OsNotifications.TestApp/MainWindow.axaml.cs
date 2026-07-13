@@ -35,8 +35,11 @@ public partial class MainWindow : Window
     private async void OnShowNotification(object? sender, RoutedEventArgs e)
     {
         BtnShowNotification.IsEnabled = false;
-        TxtShowResult.Text = "Sending...";
+        TxtShowResult.Text = "Will send in 5s... (switch to another app)";
 
+        await Task.Delay(5000);
+
+        TxtShowResult.Text = "Sending...";
         var ok = await Notifications.ShowNotificationAsync(
             "Hello from OsNotifications",
             "Test App",
