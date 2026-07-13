@@ -1,92 +1,39 @@
-// Code taken from https://github.com/norio-nomura/usernotification
+#import <UserNotifications/UserNotifications.h>
 
-#import <Foundation/Foundation.h>
-#import <objc/runtime.h>
+bool requestNotificationPermission() {
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    __block bool granted = false;
 
-#pragma mark - Swizzle NSBundle
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    UNAuthorizationOptions options = UNAuthorizationOptionAlert
+                                   | UNAuthorizationOptionSound
+                                   | UNAuthorizationOptionBadge;
+    [center requestAuthorizationWithOptions:options
+                          completionHandler:^(BOOL result, NSError *error) {
+        granted = result;
+        dispatch_semaphore_signal(semaphore);
+    }];
 
-NSString *fakeBundleIdentifier = nil;
-
-@implementation NSBundle(swizle)
-
-- (NSString *)__bundleIdentifier {
-    if (self == [NSBundle mainBundle]) {
-        return fakeBundleIdentifier ? fakeBundleIdentifier : @"com.apple.finder";
-    } else {
-        return [self __bundleIdentifier];
-    }
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    return granted;
 }
 
-@end
+void showNotification(char *title, char *subtitle, char *body) {
+    UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+    if (title)    content.title    = [NSString stringWithUTF8String:title];
+    if (subtitle) content.subtitle = [NSString stringWithUTF8String:subtitle];
+    if (body)     content.body     = [NSString stringWithUTF8String:body];
 
-BOOL installNSBundleHook() {
-    Class class = objc_getClass("NSBundle");
-    if (class) {
-        method_exchangeImplementations(class_getInstanceMethod(class, @selector(bundleIdentifier)),
-                                       class_getInstanceMethod(class, @selector(__bundleIdentifier)));
-        return YES;
-    }
-    return NO;
+    NSString *identifier = [[NSUUID UUID] UUIDString];
+    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:identifier
+                                                                         content:content
+                                                                         trigger:nil];
+
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center addNotificationRequest:request withCompletionHandler:^(NSError *error) {
+        dispatch_semaphore_signal(semaphore);
+    }];
+
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 }
-
-
-#pragma mark - NotificationCenterDelegate
-
-@interface NotificationCenterDelegate : NSObject<NSUserNotificationCenterDelegate>
-
-@property (nonatomic, assign) BOOL keepRunning;
-
-@end
-
-@implementation NotificationCenterDelegate
-
-- (void)userNotificationCenter:(NSUserNotificationCenter *)center didDeliverNotification:(NSUserNotification *)notification {
-    self.keepRunning = NO;
-}
-
-@end
-
-
-#pragma mark -
-
-BOOL isGuiApplication = NO;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void setGuiApplication(BOOL isGuiValue) {
-    isGuiApplication = isGuiValue;
-}
-
-void showNotification(char *identifier, char *title, char *subtitle, char *informativeText) {
-    @autoreleasepool {
-        if (installNSBundleHook()) {
-            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-            
-            if (identifier != NULL && identifier[0] != 0)
-                fakeBundleIdentifier = [NSString stringWithUTF8String:identifier];
-            
-            NSUserNotificationCenter *nc = [NSUserNotificationCenter defaultUserNotificationCenter];
-            NotificationCenterDelegate *ncDelegate = [[NotificationCenterDelegate alloc] init];
-            ncDelegate.keepRunning = YES;
-            nc.delegate = ncDelegate;
-            
-            NSUserNotification *note = [[NSUserNotification alloc] init];
-            note.title = [NSString stringWithUTF8String:title];
-            note.subtitle = [NSString stringWithUTF8String:subtitle];
-            note.informativeText = [NSString stringWithUTF8String:informativeText];
-            
-            [nc deliverNotification:note];
-            
-            while (!isGuiApplication && ncDelegate.keepRunning) {
-                [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
-            }
-        }
-    }
-}
-    
-#ifdef __cplusplus
-}
-#endif
-    
