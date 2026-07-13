@@ -11,7 +11,7 @@ public partial class Notifications {
     private static string? _applicationName;
 
     /// <summary>
-    /// Sets the application identifier used by Windows (AUMID) and previously by macOS.
+    /// Sets the application identifier used by Windows (AUMID).
     /// On macOS, the real bundle identifier from the app bundle is used automatically.
     /// </summary>
     public static void SetApplicationIdentifier(string identifier) {
@@ -25,8 +25,23 @@ public partial class Notifications {
         _applicationName = name;
     }
 
-    static Notifications() {
-        LinuxNotifications.Initialize();
+    /// <summary>
+    /// Initializes the notification system for the current platform.
+    /// </summary>
+    /// <remarks>
+    /// Call this once at app startup, before any calls to <see cref="ShowNotification"/>.
+    /// <br/>
+    /// <b>Windows:</b> Registers the AUMID and creates a Start Menu shortcut.
+    /// <br/>
+    /// <b>Linux:</b> Connects to the FreeDesktop notification DBus service.
+    /// <br/>
+    /// <b>macOS:</b> No-op (use <see cref="RequestNotificationPermission"/> instead).
+    /// </remarks>
+    public static void Initialize() {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            WindowsNotifications.Initialize(GetApplicationName(), GetApplicationIdentifier());
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            LinuxNotifications.Initialize();
     }
 
     /// <summary>
@@ -45,6 +60,35 @@ public partial class Notifications {
     }
 
     /// <summary>
+    /// Checks whether notification permission is currently granted.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the app is authorized to show notifications; otherwise <see langword="false"/>.
+    /// </returns>
+    /// <remarks>
+    /// <b>macOS:</b> Checks <c>UNAuthorizationStatus</c> — returns <see langword="true"/> for
+    /// Authorized, Provisional, or Ephemeral.
+    /// <br/>
+    /// <b>Windows:</b> Reads the <c>Enabled</c> registry value under
+    /// <c>HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Notifications\Settings\&lt;AUMID&gt;</c>.
+    /// Returns <see langword="true"/> if the key is absent or the value is non-zero.
+    /// <br/>
+    /// <b>Linux:</b> Returns <see langword="true"/> if the DBus notification service is available.
+    /// The FreeDesktop Notifications specification has no permission model — individual daemons
+    /// may filter or suppress notifications at their own discretion, which cannot be queried.
+    /// </remarks>
+    public static bool IsNotificationPermissionGranted() {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            return MacNotifications.IsPermissionGranted();
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            return WindowsNotifications.IsPermissionGranted();
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            return LinuxNotifications.IsPermissionGranted();
+
+        return false;
+    }
+
+    /// <summary>
     /// Shows a native OS notification.
     /// </summary>
     /// <remarks>
@@ -57,7 +101,7 @@ public partial class Notifications {
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             MacNotifications.Show(title, message, informativeText);
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            WindowsNotifications.Show(title, message, GetApplicationName(), GetApplicationIdentifier());
+            WindowsNotifications.Show(title, message);
         else
             throw new PlatformNotSupportedException("Notifications are only supported on Linux, MacOS and Windows");
     }
@@ -69,7 +113,7 @@ public partial class Notifications {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             return MacNotifications.ShowAsync(title, message, informativeText);
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            return WindowsNotifications.ShowAsync(title, message, GetApplicationName(), GetApplicationIdentifier());
+            return WindowsNotifications.ShowAsync(title, message);
 
         throw new PlatformNotSupportedException("Notifications are only supported on Linux, MacOS and Windows");
     }

@@ -11,7 +11,10 @@ using OsNotifications;
 Notifications.SetApplicationName("My App");
 Notifications.SetApplicationIdentifier("com.example.myapp");
 
-// macOS: request permission once at startup; does nothing on windows and linux.
+// Initialize notification system
+Notifications.Initialize();
+
+// macOS: request permission once at startup; no-op on other platforms
 Notifications.RequestNotificationPermission();
 
 try {
@@ -31,6 +34,24 @@ await Notifications.ShowNotificationAsync(
     "Notification message");
 ```
 
+You can also check notification permission at any time:
+
+```csharp
+if (Notifications.IsNotificationPermissionGranted())
+    Notifications.ShowNotification("Title", "Message");
+```
+
+### Abilities
+
+| API | Windows | macOS | Linux                        |
+|-----|---------|-----|------------------------------|
+| `Initialize()` | ✅ | no-op | ✅                            |
+| `SetApplicationIdentifier()` | ✅ | no-op | ✅                            |
+| `SetApplicationName()` | ✅ | no-op | ✅                            |
+| `RequestNotificationPermission()` | no-op | ✅ | no-op                        |
+| `IsNotificationPermissionGranted()` | ✅ | ✅ | just check DBus availability |
+| `ShowNotification()` / `ShowNotificationAsync()` | ✅ | ✅ | ✅     |
+
 ### Windows
 
 For Windows toast notifications, target a Windows TFM:
@@ -39,16 +60,14 @@ For Windows toast notifications, target a Windows TFM:
 <TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
 ```
 
-The Windows implementation creates a Start Menu shortcut with the same AUMID so unpackaged desktop apps are correctly recognized by Windows Shell, so we need to register them before showing the first toast. 
-call `SetApplicationIdentifier` sets the AUMID, and `SetApplicationName` sets the Start Menu shortcut name.
-
-If you do not call them, the current executable name is used for both.
+Call `SetApplicationIdentifier` and `SetApplicationName`, then `Initialize()` to register the AUMID and create a Start Menu shortcut. If you do not call the setters, the current executable name is used for both.
 
 ```csharp
 using OsNotifications;
 
 Notifications.SetApplicationName("My App");
 Notifications.SetApplicationIdentifier("com.example.myapp");
+Notifications.Initialize();
 
 Notifications.ShowNotification("Hello", "This toast is associated with My App.");
 ```
@@ -59,7 +78,7 @@ If the application exits immediately after `ShowNotification`, Windows may not d
 
 Your app must be running from a proper macOS bundle.
 
-- (optional) You can always call `RequestNotificationPermission` before scheduling any notifications. The system prompts the user only on the very first call, 
+- Always call `RequestNotificationPermission` before scheduling any notifications. The system prompts the user only on the very first call, 
 and stores the response permanently. Subsequent calls (even across app restarts) return immediately without prompting.
 - The user may change authorization at any time in system settings. You can safely call this method repeatedly — it will never show the prompt again after the first time.
 
@@ -79,10 +98,12 @@ If the user denies authorization, notifications will be silently ignored by the 
 
 ### Linux
 
-Linux notifications use the FreeDesktop notification service over DBus:
+Linux notifications use the FreeDesktop notification service over DBus. Call `Initialize()` to connect to the session bus, then `SetApplicationName` to set the FreeDesktop application name:
 
 ```csharp
 using OsNotifications;
+
+Notifications.Initialize();
 
 Notifications.ShowNotification("Build complete", "No errors found.");
 ```

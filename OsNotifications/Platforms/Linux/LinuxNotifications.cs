@@ -41,4 +41,8 @@ internal static class LinuxNotifications {
 		return _notifier!.NotifyAsync(applicationName, 0, "", title, message,
 			Array.Empty<string>(), new Dictionary<string, object>(), 5000);
 	}
+
+	public static bool IsPermissionGranted() {
+		return _notifier != null;
+	}
 }

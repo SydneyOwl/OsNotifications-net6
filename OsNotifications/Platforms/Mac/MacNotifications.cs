@@ -7,6 +7,9 @@ internal static class MacNotifications {
     private static extern bool requestNotificationPermission();
 
     [DllImport("macNotification.dylib")]
+    private static extern bool isNotificationPermissionGranted();
+
+    [DllImport("macNotification.dylib")]
     private static extern void showNotification(
         [MarshalAs(UnmanagedType.LPUTF8Str)] string title,
         [MarshalAs(UnmanagedType.LPUTF8Str)] string subtitle,
@@ -14,6 +17,10 @@ internal static class MacNotifications {
 
     public static void RequestPermission() {
         requestNotificationPermission();
+    }
+
+    public static bool IsPermissionGranted() {
+        return isNotificationPermissionGranted();
     }
 
     public static void Show(string title, string message, string informativeText) {
