@@ -40,8 +40,8 @@
 	</PropertyGroup>
 
 	<Target Name="CompileMacDependencies" BeforeTargets="Build" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
-		<Exec Command="clang -dynamiclib -o $(_MacDylibDir)macNotification_x86_64.dylib macNotification.m -framework UserNotifications -framework Foundation -arch x86_64" />
-		<Exec Command="clang -dynamiclib -o $(_MacDylibDir)macNotification_arm64.dylib macNotification.m -framework UserNotifications -framework Foundation -arch arm64" />
+		<Exec Command="clang -dynamiclib -o $(_MacDylibDir)macNotification_x86_64.dylib macNotification.m -framework UserNotifications -framework Foundation -arch x86_64 -v" />
+		<Exec Command="clang -dynamiclib -o $(_MacDylibDir)macNotification_arm64.dylib macNotification.m -framework UserNotifications -framework Foundation -arch arm64 -v" />
 		<Exec Command="lipo -create -output $(_MacDylibDir)macNotification.dylib $(_MacDylibDir)macNotification_x86_64.dylib $(_MacDylibDir)macNotification_arm64.dylib" />
 		<Exec Command="rm $(_MacDylibDir)macNotification_x86_64.dylib $(_MacDylibDir)macNotification_arm64.dylib" />
 
