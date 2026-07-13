@@ -32,4 +32,20 @@
     <ItemGroup>
         <ProjectReference Include="..\OsNotifications\OsNotifications.csproj" />
     </ItemGroup>
+
+    <Target Name="CopyMacDylib" AfterTargets="Build" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+        <PropertyGroup>
+            <_DylibSource>$(MSBuildProjectDirectory)\..\OsNotifications\bin\$(Configuration)\macNotification.dylib</_DylibSource>
+        </PropertyGroup>
+        <Copy SourceFiles="$(_DylibSource)" DestinationFolder="$(OutputPath)"
+              Condition="Exists('$(_DylibSource)')" />
+    </Target>
+
+    <Target Name="CopyMacDylibPublish" AfterTargets="Publish" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+        <PropertyGroup>
+            <_DylibSource>$(MSBuildProjectDirectory)\..\OsNotifications\bin\$(Configuration)\macNotification.dylib</_DylibSource>
+        </PropertyGroup>
+        <Copy SourceFiles="$(_DylibSource)" DestinationFolder="$(PublishDir)"
+              Condition="Exists('$(_DylibSource)')" />
+    </Target>
 </Project>
