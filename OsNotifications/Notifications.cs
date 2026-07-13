@@ -157,7 +157,7 @@ public partial class Notifications {
         return true;
     }
 
-    private static NotificationPermissionStatus MapMacStatus(MacNotificationPermissionStatus macStatus) {
+    internal static NotificationPermissionStatus MapMacStatus(MacNotificationPermissionStatus macStatus) {
         return macStatus switch {
             MacNotificationPermissionStatus.Authorized => NotificationPermissionStatus.Granted,
             MacNotificationPermissionStatus.Provisional => NotificationPermissionStatus.Granted,
@@ -168,14 +168,14 @@ public partial class Notifications {
         };
     }
 
-    private static string GetApplicationName() {
+    internal static string GetApplicationName() {
         if (!string.IsNullOrWhiteSpace(_applicationName))
             return _applicationName.Trim();
 
         return Assembly.GetEntryAssembly()?.GetName().Name ?? "";
     }
 
-    private static string GetApplicationIdentifier() {
+    internal static string GetApplicationIdentifier() {
         if (!string.IsNullOrWhiteSpace(_applicationIdentifier))
             return _applicationIdentifier.Trim();
 

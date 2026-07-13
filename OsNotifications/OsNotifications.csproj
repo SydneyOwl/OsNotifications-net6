@@ -20,6 +20,12 @@
 		<Copyright>Copyright (c) 2026 DemonExposer, SydneyOwl</Copyright>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>OsNotifications.Tests</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
+
 	<ItemGroup Condition="'$(TargetPlatformIdentifier)' != 'windows'">
 		<Compile Remove="Platforms\Windows\WindowsApplicationRegistration.cs" />
 		<Compile Remove="Platforms\Windows\WindowsNotifications.cs" />
