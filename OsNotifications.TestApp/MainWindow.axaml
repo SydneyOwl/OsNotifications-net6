@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="OsNotifications.TestApp.MainWindow"
+        Title="OsNotifications Test"
+        Width="400" Height="350"
+        Padding="20">
+    <StackPanel Spacing="12">
+        <TextBlock Text="OsNotifications Test" FontSize="20" FontWeight="Bold" />
+        <TextBlock Text="macOS Notification Testing" FontSize="14" Foreground="Gray" />
+
+        <Separator />
+
+        <Button x:Name="BtnCheckStatus" Content="Check Permission Status" />
+        <TextBlock x:Name="TxtStatus" Text="Not checked yet" />
+
+        <Button x:Name="BtnRequestPermission" Content="Request Permission" />
+        <TextBlock x:Name="TxtPermissionResult" Text="" />
+
+        <Separator />
+
+        <Button x:Name="BtnShowNotification" Content="Show Test Notification" />
+        <TextBlock x:Name="TxtShowResult" Text="" />
+
+        <Separator />
+
+        <Button x:Name="BtnShowCustom" Content="Show Custom Notification" />
+        <TextBox x:Name="TxtTitle" Watermark="Title" />
+        <TextBox x:Name="TxtBody" Watermark="Body" />
+    </StackPanel>
+</Window>

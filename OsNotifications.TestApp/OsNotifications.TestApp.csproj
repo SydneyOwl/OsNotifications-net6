@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <OutputType>WinExe</OutputType>
+        <Nullable>enable</Nullable>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <CFBundleName>OsNotificationsTest</CFBundleName>
+        <CFBundleDisplayName>OsNotificationsTest</CFBundleDisplayName>
+        <CFBundleIdentifier>com.sydneyowl.osnotifications.test</CFBundleIdentifier>
+        <CFBundleVersion>0.0.1</CFBundleVersion>
+        <CFBundleShortVersionString>0.0.1</CFBundleShortVersionString>
+        <NSPrincipalClass>NSApplication</NSPrincipalClass>
+        <NSHighResolutionCapable>true</NSHighResolutionCapable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="11.1.5" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.1.5" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.1.5" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.1.5" />
+        <PackageReference Include="Dotnet.Bundle" Version="0.9.13" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\OsNotifications\OsNotifications.csproj" />
+    </ItemGroup>
+</Project>
