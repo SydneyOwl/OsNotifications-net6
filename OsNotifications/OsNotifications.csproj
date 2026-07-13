@@ -6,7 +6,7 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<EnableWindowsTargeting>true</EnableWindowsTargeting>
 		<BuildInParallel>false</BuildInParallel>
-		<Version>1.3.1</Version>
+		<Version>2.0.0</Version>
 		<PackageId>OsNotificationsNet6</PackageId>
 		<Authors>DemonExposer, SydneyOwl</Authors>
 		<Description>Native OS notifications in .NET</Description>
