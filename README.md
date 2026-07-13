@@ -1,6 +1,6 @@
 # Native OS notifications
 
-Modified from https://github.com/DemonExposer/OsNotifications. Downgraded deps to net6 and use a more "native" way to send notifications on windows.
+Modified from https://github.com/DemonExposer/OsNotifications. Downgraded deps to net6 and use a more "native" way to send notifications on windows/macOS.
 
 ## Usage
 
@@ -14,7 +14,8 @@ Notifications.SetApplicationIdentifier("com.example.myapp");
 // Initialize notification system
 Notifications.Initialize();
 
-// macOS: request permission once at startup; no-op on other platforms
+// on macOS you can request permission at first startup or whenever you like
+// no-op on other platforms
 Notifications.RequestNotificationPermission();
 
 try {
@@ -78,7 +79,7 @@ If the application exits immediately after `ShowNotification`, Windows may not d
 
 Your app must be running from a proper macOS bundle.
 
-- Always call `RequestNotificationPermission` before scheduling any notifications. The system prompts the user only on the very first call, 
+- (optional) call `RequestNotificationPermission` before scheduling any notifications. The system prompts the user only on the very first call, 
 and stores the response permanently. Subsequent calls (even across app restarts) return immediately without prompting.
 - The user may change authorization at any time in system settings. You can safely call this method repeatedly — it will never show the prompt again after the first time.
 
