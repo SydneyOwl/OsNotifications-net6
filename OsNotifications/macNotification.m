@@ -2,28 +2,6 @@
 
 #define NOTIFICATION_TIMEOUT_SECONDS 30
 
-// --- Delegate to allow notifications while app is in foreground ---
-@interface MacNotificationDelegate : NSObject <UNUserNotificationCenterDelegate>
-@end
-
-@implementation MacNotificationDelegate
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center
-       willPresentNotification:(UNNotification *)notification
-         withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
-    completionHandler(UNNotificationPresentationOptionBanner
-                    | UNNotificationPresentationOptionSound
-                    | UNNotificationPresentationOptionBadge);
-}
-@end
-
-void initializeNotificationDelegate(void) {
-    static MacNotificationDelegate *delegate = nil;
-    if (!delegate) {
-        delegate = [[MacNotificationDelegate alloc] init];
-        [UNUserNotificationCenter currentNotificationCenter].delegate = delegate;
-    }
-}
-
 // --- Unified callback type ---
 typedef void (*MacNotificationCallback)(int32_t result, void *userData);
 
