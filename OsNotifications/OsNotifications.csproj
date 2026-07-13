@@ -36,7 +36,7 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<_MacDylibDir>$(MSBuildProjectDirectory)\$(BaseOutputPath)$(Configuration)\</_MacDylibDir>
+		<_MacDylibDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\</_MacDylibDir>
 	</PropertyGroup>
 
 	<Target Name="CompileMacDependencies" BeforeTargets="Build" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
