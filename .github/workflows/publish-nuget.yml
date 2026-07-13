@@ -2,6 +2,8 @@ name: Publish NuGet
 
 on:
   push:
+    branches:
+      - "**"
     tags:
       - "v*"
       - "[0-9]*"
@@ -25,15 +27,21 @@ jobs:
       - name: Resolve package version
         shell: bash
         run: |
-          tag="${GITHUB_REF_NAME}"
-          version="${tag#v}"
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            tag="${GITHUB_REF_NAME}"
+            version="${tag#v}"
 
-          if [[ ! "$version" =~ ^[0-9]+(\.[0-9]+){2}(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
-            echo "Tag '$tag' is not a valid NuGet version tag. Use v1.2.3 or 1.2.3."
-            exit 1
+            if [[ ! "$version" =~ ^[0-9]+(\.[0-9]+){2}(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+              echo "Tag '$tag' is not a valid NuGet version tag. Use v1.2.3 or 1.2.3."
+              exit 1
+            fi
+
+            echo "PACKAGE_VERSION=$version" >> "$GITHUB_ENV"
+            echo "IS_TAG=true" >> "$GITHUB_ENV"
+          else
+            echo "PACKAGE_VERSION=0.0.0-ci" >> "$GITHUB_ENV"
+            echo "IS_TAG=false" >> "$GITHUB_ENV"
           fi
-
-          echo "PACKAGE_VERSION=$version" >> "$GITHUB_ENV"
 
       - name: Restore
         run: dotnet restore OsNotifications.sln
@@ -46,7 +54,14 @@ jobs:
           /p:Version=${PACKAGE_VERSION}
           /p:PackageVersion=${PACKAGE_VERSION}
 
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-package
+          path: artifacts/*.nupkg
+
       - name: Publish to NuGet
+        if: env.IS_TAG == 'true'
         run: >
           dotnet nuget push "artifacts/*.nupkg"
           --api-key "${NUGET_API_KEY}"
