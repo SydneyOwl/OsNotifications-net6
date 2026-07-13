@@ -1,6 +1,10 @@
 # Native OS notifications
 
-Modified from https://github.com/DemonExposer/OsNotifications. Downgraded deps to net6 and use a more "native" way to send notifications on windows/macOS.
+Modified from https://github.com/DemonExposer/OsNotifications. 
+
+Available on net6+ and tested on win11/ubuntu24/macOS15
+
+**NOTE: on macOS you must sign your app for push notifications to work.**
 
 ## Usage
 
@@ -82,6 +86,11 @@ Your app must be running from a proper macOS bundle.
 - (optional) Always call `RequestNotificationPermission` before scheduling any notifications. Returns `true` if the user granted authorization. 
 The system prompts the user only on the very first call, and stores the response permanently. Subsequent calls (even across app restarts) return immediately without prompting.
 - The user may change authorization at any time in system settings. Use `GetNotificationPermissionStatus()` to check the current status.
+
+**On my Mac mini used for testing, the app never pushes foreground notifications — I have to manually click the notification center to see them. If you know how to fix this,      
+please let me know.**
+
+![img.png](assets/img.png)
 
 ```csharp
 using OsNotifications;
